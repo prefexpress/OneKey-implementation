@@ -11,9 +11,12 @@ import {
   PostSeedRequest,
   PostSeedResponse,
   PostSignPreferencesRequest,
+  PostTransmissionRequestRequest,
+  PostTransmissionRequestResponse,
   Preferences,
   Seed,
   TransactionId,
+  TransmissionRequest,
 } from '@core/model/generated-model';
 import { Cookies, getPrebidDataCacheExpiration } from '@core/cookies';
 import { jsonProxyEndpoints, proxyUriParams, redirectProxyEndpoints } from '@core/endpoints';
@@ -129,6 +132,8 @@ export type SignPrefsOptions = Options;
 export type GetNewIdOptions = Options;
 
 export type CreateSeedOptions = Options;
+
+export type CreateTransmissionRequestOptions = Options;
 
 /**
  * Refresh result
@@ -433,7 +438,7 @@ export const getIdsAndPreferences = (): IdsAndPreferences | undefined => {
 };
 
 export const createSeed = async (
-  { proxyHostName }: CreateSeedOptions,
+  { proxyHostName }: Options,
   transactionIds: TransactionId[]
 ): Promise<Seed | undefined> => {
   const getUrl = getProxyUrl(proxyHostName);
@@ -450,4 +455,36 @@ export const createSeed = async (
   const response = await postJson(url, requestContent);
 
   return await response.json();
+};
+
+export const createTransmissionRequest = async (
+  { proxyHostName }: Options,
+  seed: Seed
+): Promise<TransmissionRequest | undefined> => {
+  const getUrl = getProxyUrl(proxyHostName);
+  const url = getUrl(jsonProxyEndpoints.createTransmissionRequest);
+  const idsAndPrefs = getIdsAndPreferences();
+  if (idsAndPrefs === undefined) {
+    return undefined;
+  }
+
+  const requestContent: PostTransmissionRequestRequest = {
+    seed,
+    data: idsAndPrefs,
+  };
+  const response = await postJson(url, requestContent);
+
+  return await response.json();
+};
+
+export const createDirectTransmissionRequest = async (
+  options: Options,
+  transactionIds: TransactionId[]
+): Promise<TransmissionRequest | undefined> => {
+  const seed = await createSeed(options, transactionIds);
+  if (seed === undefined) {
+    return undefined;
+  }
+  const transmissionRequest = await createTransmissionRequest(options, seed);
+  return transmissionRequest;
 };

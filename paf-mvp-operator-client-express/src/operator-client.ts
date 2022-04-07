@@ -6,6 +6,7 @@ import {
   Seed,
   Signature,
   TransactionId,
+  TransmissionRequest,
 } from '@core/model/generated-model';
 import { CurrentModelVersion, UnsignedData } from '@core/model/model';
 import { privateKeyFromString } from '@core/crypto/keys';
@@ -21,12 +22,14 @@ import {
 } from '@core/crypto/signing-definition';
 import { MessageVerifier } from '@core/crypto/verifier';
 import { getTimeStampInSec } from '@core/timestamp';
+import { hostname } from 'os';
 
 // FIXME should probably be moved to core library
 export class OperatorClient {
   private readonly getIdsPrefsRequestBuilder: GetIdsPrefsRequestBuilder;
   private readonly prefsSigner: Signer<IdsAndUnsignedPreferences>;
   private readonly seedSigner: Signer<SeedSignatureContainer>;
+  private readonly transmissionRequestSigner: Signer<TransmissionRequest>;
 
   constructor(
     protected operatorHost: string,
@@ -77,6 +80,13 @@ export class OperatorClient {
     return seed;
   }
 
+  buildTransmissionRequest(seed: Seed, idsAndPreferences: IdsAndPreferences): TransmissionRequest {
+    const unsigned = this.createUnsignedTransmissionRequest(seed, idsAndPreferences);
+    const signature = this.transmissionRequestSigner.sign(unsigned);
+    const request = this.addSignatureToTransmissionRequest(unsigned, signature);
+    return request;
+  }
+
   getReadRestUrl(): URL {
     const getIdsPrefsRequestJson = this.getIdsPrefsRequestBuilder.buildRequest();
     return this.getIdsPrefsRequestBuilder.getRestUrl(getIdsPrefsRequestJson);
@@ -88,6 +98,40 @@ export class OperatorClient {
       returnUrl
     );
     return this.getIdsPrefsRequestBuilder.getRedirectUrl(getIdsPrefsRequestJson);
+  }
+
+  private createUnsignedTransmissionRequest(
+    seed: Seed,
+    idsAndPreferences: IdsAndPreferences,
+    timestamp = getTimeStampInSec()
+  ): UnsignedData<TransmissionRequest> {
+    return {
+      version: CurrentModelVersion,
+      seed,
+      data: idsAndPreferences,
+      receiver: this.clientHost,
+      status: 'success',
+      details: '',
+      contents: [],
+      source: {
+        domain: this.clientHost,
+        timestamp,
+      },
+      parents: [],
+    };
+  }
+
+  private addSignatureToTransmissionRequest(
+    unsigned: UnsignedData<TransmissionRequest>,
+    signature: Signature
+  ): TransmissionRequest {
+    return {
+      ...unsigned,
+      source: {
+        ...unsigned.source,
+        signature,
+      },
+    };
   }
 
   private createUnsignedSeed(transactionIds: TransactionId[], timestamp = getTimeStampInSec()): UnsignedData<Seed> {

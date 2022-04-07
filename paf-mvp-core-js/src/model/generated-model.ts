@@ -86,6 +86,8 @@ export interface _ {
   'post-seed-response'?: PostSeedResponse;
   'post-sign-preferences-request'?: PostSignPreferencesRequest;
   'preferences-data'?: PreferencesData;
+  'post-transmission-request-request'?: PostTransmissionRequestRequest;
+  'post-transmission-request-response'?: PostTransmissionRequestResponse;
   preferences?: Preferences;
   'redirect-get-ids-prefs-request'?: RedirectGetIdsPrefsRequest;
   'redirect-get-ids-prefs-response'?: RedirectGetIdsPrefsResponse;
@@ -317,7 +319,7 @@ export interface PostSeedRequest {
   transaction_ids: TransactionId[];
 }
 /**
- * POST /v1/seed request
+ * POST /paf-proxy/v1/seed request
  */
 export interface PostSeedResponse {
   version: Version;
@@ -338,6 +340,30 @@ export interface PostSignPreferencesRequest {
 export interface UnsignedPreferences {
   version: Version;
   data: PreferencesData;
+}
+/**
+ * POST /paf-proxy/v1/transmission-request request
+ */
+export interface PostTransmissionRequestRequest {
+  data: IdsAndPreferences;
+  seed: Seed;
+}
+/**
+ * POST /paf-proxy/v1/transmission-request request
+ */
+export interface PostTransmissionRequestResponse {
+  version: Version;
+  seed: Seed;
+  data: IdsAndPreferences;
+  receiver: TransmissionReceiver;
+  status: TransmissionStatus1;
+  details: TransmissionDetails;
+  contents: TransmissionContents;
+  source: Source;
+  /**
+   * The list of Transmission Result before this Transmission Request for the given Seed.
+   */
+  parents: TransmissionResult[];
 }
 /**
  * GET /v1/redirect/get-ids-prefs request

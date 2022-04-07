@@ -13,6 +13,7 @@ const jsonWrite = '/v1/ids-prefs';
 const jsonVerify3PC = '/v1/3pc';
 const jsonNewId = '/v1/new-id';
 const jsonSeed = '/v1/seed';
+const jsonTransmissionRequest = '/v1/transmission-request';
 const identity = '/v1/identity';
 
 export const jsonOperatorEndpoints = {
@@ -40,6 +41,7 @@ export const jsonProxyEndpoints = {
   verify3PC: `${proxyPrefix}${jsonVerify3PC}`,
   newId: `${proxyPrefix}${jsonNewId}`,
   createSeed: `${proxyPrefix}${jsonSeed}`,
+  createTransmissionRequest: `${proxyPrefix}${jsonTransmissionRequest}`,
 };
 export const redirectProxyEndpoints = {
   read: `${proxyPrefix}${redirectEndpoints.read}`,

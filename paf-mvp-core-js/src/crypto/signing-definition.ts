@@ -11,6 +11,7 @@ import {
   PostIdsPrefsResponse,
   Preferences,
   Seed,
+  TransmissionRequest,
 } from '@core/model/generated-model';
 import { RedirectRequest, RedirectResponse, UnsignedData, UnsignedMessage } from '@core/model/model';
 import { SignatureStringBuilder } from './signer';
@@ -52,6 +53,21 @@ export class SeedSignatureBuilder implements SignatureStringBuilder<SeedSignatur
       seed.publisher,
       ...ids.map((i) => i.source.signature),
       prefs.source.signature,
+    ];
+
+    return array.join(SIGN_SEP);
+  }
+}
+
+export class TranmissionRequestSignatureBuilder implements SignatureStringBuilder<TransmissionRequest> {
+  getInputString(request: TransmissionRequest): string {
+    const array: string[] = [
+      request.receiver,
+      request.status,
+      request.source.domain,
+      request.source.timestamp.toString(),
+      request.seed.source.signature,
+      ...request.contents.flatMap((c) => [c.content_id, c.transaction_id]),
     ];
 
     return array.join(SIGN_SEP);

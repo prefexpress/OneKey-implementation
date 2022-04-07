@@ -7,6 +7,7 @@ import {
   PostSeedRequest,
   PostSeedResponse,
   PostSignPreferencesRequest,
+  PostTransmissionRequestRequest,
   RedirectGetIdsPrefsResponse,
 } from '@core/model/generated-model';
 import { jsonProxyEndpoints, proxyUriParams, redirectProxyEndpoints } from '@core/endpoints';
@@ -137,6 +138,13 @@ export const addOperatorClientProxyEndpoints = (
     const seed = client.buildSeed(request.transaction_ids, request.data);
     const response = seed as PostSeedResponse; // For now, the response is only a Seed.
     res.send(response);
+  });
+
+  app.post(jsonProxyEndpoints.createTransmissionRequest, cors(corsOptions), (req, res) => {
+    const httpRequest = JSON.parse(req.body as string) as PostTransmissionRequestRequest;
+    const transmissionRequest = client.buildTransmissionRequest(httpRequest.seed, httpRequest.data);
+    const httpResponse = transmissionRequest as PostTransmissionRequestRequest;
+    res.send(httpResponse);
   });
 
   // *****************************************************************************************************************

@@ -95,9 +95,18 @@ export class Node implements INode {
    * @param endPointName
    */
   handleErrors(endPointName: string): ErrorRequestHandler {
-    return (err: NodeError, req: Request, res: Response, next: NextFunction) => {
+    return (err: any, req: Request, res: Response, next: NextFunction) => {
       // TODO next step: define a common logging format for errors (on 1 line), usable for monitoring
       this.logger.Error(endPointName, err);
+
+      // In case of timeout redirect to referer ...
+      if (err.message === 'Response timeout') {
+        const error: NodeError = {
+          type: NodeErrorType.RESPONSE_TIMEOUT,
+          details: err.message,
+        };
+        this.redirectWithError(res, req.header('referer'), 504, error);
+      }
     };
   }
 
@@ -191,7 +200,7 @@ export class Node implements INode {
   protected redirectWithError = (res: Response, url: string, httpCode: number, error: NodeError): void => {
     try {
       this.logger.Info(`redirecting to ${url} ...`);
-      const redirectURL = buildErrorRedirectUrl(new URL(url), 403, error);
+      const redirectURL = buildErrorRedirectUrl(new URL(url), httpCode, error);
       httpRedirect(res, redirectURL.toString());
     } catch (e) {
       this.logger.Error(e);

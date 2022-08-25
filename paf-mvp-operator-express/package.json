@@ -32,7 +32,9 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "tld-extract": "^2.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "@types/connect-timeout": "^0.0.36",
+    "connect-timeout": "^1.9.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
